@@ -1,6 +1,7 @@
 import { Link, Redirect, useRouter } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Brand, Button, Card, Field, Muted, Screen } from '../components/ui'
+import Constants from 'expo-constants'
 import { API_URL } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { colors } from '../theme'
@@ -43,7 +44,7 @@ export default function Login() {
           No account? <Link href="/register" style={{ color: colors.primary, fontWeight: '600' }}>Register</Link>
         </Muted>
       </Card>
-      <Muted small style={{ textAlign: 'center' }}>Server: {API_URL}</Muted>
+      <Muted small style={{ textAlign: 'center' }}>Server: {API_URL} · v{Constants.expoConfig?.version}</Muted>
     </Screen>
   )
 }

@@ -44,5 +44,7 @@ A Play Console account costs $25 once. Set the real HTTPS backend in `eas.json` 
 | `Unexpected argument` | Use `--profile preview`, not `--local=false` |
 | The APK says "Cannot reach the server" | Check `EXPO_PUBLIC_API_URL` in `eas.json`, check that the phone is on the same Wi-Fi and the backend is running with `--host 0.0.0.0`, then rebuild if the address changed |
 | `Not logged in` | Run `eas login` |
+| The APK downloads but tapping it does nothing | Open it from the **Files** app and choose **Package installer**, not TeraBox or WPS. Allow *Install unknown apps* for that app. If Play Protect warns you, tap **Install anyway** |
+| Login works but PDF upload says it can't reach the server | Install version 1.0.2 or later; the login screen shows the version. Older builds sent the file with `fetch`, which Expo SDK 58 can't do for phone files |
 | Build fails in *Install dependencies* with `npm error Missing: … from lock file` | `package-lock.json` is out of date. In `mobile/`, run `npm install`, commit the lock file, and build again. `mobile/.npmrc` keeps peer dependencies in the lock file, which Expo's servers need |
 | Build fails with any other error | Open the build on expo.dev and read the first red phase in the log |

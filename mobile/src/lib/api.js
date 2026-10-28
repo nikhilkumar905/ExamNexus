@@ -1,5 +1,7 @@
 // Same endpoints as frontend/src/lib/api.js. The token is kept in memory (set by AuthProvider)
 // because storage is async on mobile.
+import * as FileSystem from 'expo-file-system/legacy'
+
 export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'
 
 let authToken = null
@@ -15,30 +17,26 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body, form, timeoutMs = 30000 } = {}) {
+async function request(path, { method = 'GET', body, timeoutMs = 30000 } = {}) {
   const headers = { Accept: 'application/json' }
   if (authToken) headers.Authorization = `Bearer ${authToken}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   let res
-  if (form) {
-    res = await xhrSend(method, `${API_URL}${path}`, headers, form, timeoutMs)
-  } else {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs)
-    try {
-      res = await fetch(`${API_URL}${path}`, {
-        method,
-        headers,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-        signal: ctrl.signal,
-      })
-    } catch (err) {
-      if (ctrl.signal.aborted) throw timeoutError(timeoutMs)
-      throw new ApiError(`Cannot reach the server at ${API_URL}. Check your connection. (${err?.message || err})`, 0)
-    } finally {
-      clearTimeout(timer)
-    }
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: ctrl.signal,
+    })
+  } catch (err) {
+    if (ctrl.signal.aborted) throw timeoutError(timeoutMs)
+    throw new ApiError(`Cannot reach the server at ${API_URL}. Check your connection. (${err?.message || err})`, 0)
+  } finally {
+    clearTimeout(timer)
   }
 
   const data = await res.json().catch(() => null)
@@ -54,21 +52,35 @@ async function request(path, { method = 'GET', body, form, timeoutMs = 30000 } =
 const timeoutError = (ms) =>
   new ApiError(`The server took longer than ${Math.round(ms / 1000)} s to answer. Try again.`, 0)
 
-// expo/fetch (SDK 52+) can't send React Native file parts ({ uri, name, type }); XHR can.
-function xhrSend(method, url, headers, form, timeoutMs) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open(method, url)
-    for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v)
-    xhr.timeout = timeoutMs
-    xhr.onload = () => {
-      const text = xhr.responseText
-      resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status, json: async () => JSON.parse(text) })
-    }
-    xhr.onerror = () => reject(new ApiError(`Cannot reach the server at ${API_URL}. Check your connection.`, 0))
-    xhr.ontimeout = () => reject(timeoutError(timeoutMs))
-    xhr.send(form)
+// Native multipart upload: expo/fetch can't send { uri } file parts, so stream the file from disk instead.
+async function uploadFile(path, file, timeoutMs) {
+  const headers = { Accept: 'application/json' }
+  if (authToken) headers.Authorization = `Bearer ${authToken}`
+  const upload = FileSystem.uploadAsync(`${API_URL}${path}`, file.uri, {
+    httpMethod: 'POST',
+    uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+    fieldName: 'file',
+    mimeType: file.mimeType || 'application/pdf',
+    headers,
   })
+  let timer
+  const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(timeoutError(timeoutMs)), timeoutMs) })
+  let res
+  try {
+    res = await Promise.race([upload, timeout])
+  } catch (err) {
+    if (err instanceof ApiError) throw err
+    throw new ApiError(`Upload failed: could not reach ${API_URL}. (${err?.message || err})`, 0)
+  } finally {
+    clearTimeout(timer)
+  }
+  let data = null
+  try { data = JSON.parse(res.body) } catch {}
+  if (res.status < 200 || res.status >= 300) {
+    if (res.status === 401 && authToken) onUnauthorized()
+    throw new ApiError(data?.detail || `Upload failed (${res.status})`, res.status)
+  }
+  return data
 }
 
 // Generating questions calls the LLM several times, so allow it longer.
@@ -81,11 +93,7 @@ export const api = {
 
   // teacher: documents & questions
   listDocuments: () => request('/api/documents'),
-  uploadDocument: (file) => {
-    const form = new FormData()
-    form.append('file', { uri: file.uri, name: file.name, type: file.mimeType || 'application/pdf' })
-    return request('/api/documents/upload', { method: 'POST', form, timeoutMs: LONG })
-  },
+  uploadDocument: (file) => uploadFile('/api/documents/upload', file, LONG),
   deleteDocument: (id) => request(`/api/documents/${id}`, { method: 'DELETE' }),
   generateQuestions: (id, body) =>
     request(`/api/documents/${id}/generate`, { method: 'POST', body, timeoutMs: LONG }),
