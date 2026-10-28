@@ -2,7 +2,7 @@
   "expo": {
     "name": "PDF Exam",
     "slug": "pdf-mcq-exam",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,8 +23,26 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
-    "scheme": "pdfexam"
+    "scheme": "pdfexam",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "4d1e7384-ecf1-49ad-a841-1a1ad736296c"
+      }
+    }
   }
 }

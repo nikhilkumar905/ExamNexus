@@ -46,16 +46,13 @@ The phone app adds two protections:
 
 ## Build an installable app (APK / App Store)
 
-Use EAS Build in the cloud. You don't need Android Studio or Xcode:
+From the project root:
 ```powershell
-npx eas-cli@latest login
-npx eas-cli@latest build:configure
-npx eas-cli@latest build --platform android --profile preview   # gives an installable .apk
+powershell -ExecutionPolicy Bypass -File scripts\build-apk.ps1
 ```
+This builds the app in Expo's cloud in about 10–15 minutes. Download the `.apk` from your Expo dashboard and share it. The APK uses the server address in **`eas.json` → `build.preview.env`**, not `.env`.
 
-Two things to do before you share a build:
-- **Host the backend somewhere public with HTTPS** (Render, Railway, a VPS, …) and set `EXPO_PUBLIC_API_URL` to that address. A local IP only works on your own Wi-Fi.
-- If you must use plain `http://` in a release build, Android blocks it by default. Allow it with the `expo-build-properties` plugin (`android.usesCleartextTraffic: true`), or better, use HTTPS.
+See [APK-GUIDE.md](../APK-GUIDE.md) for sharing, updating, Google Play and troubleshooting.
 
 ## Project layout
 

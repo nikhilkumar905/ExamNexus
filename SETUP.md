@@ -98,7 +98,7 @@ Add `--reload` to the backend command to restart it automatically when you edit 
 4. Scan the QR code in the *Mobile (Expo)* window with Expo Go (Android), or with the Camera app (iPhone).
 5. To check the phone can reach the backend, open `http://<PC-IP>:8000/api/health` in the phone's browser. It should show `{"ok":true}`. The login screen also shows which server address the app is using.
 
-To build an installable `.apk` that works without Expo Go, see [mobile/README.md](mobile/README.md#build-an-installable-app-apk--app-store).
+To build an installable `.apk` that works without Expo Go, run `scripts\build-apk.ps1`. See [APK-GUIDE.md](APK-GUIDE.md).
 
 ## 6. Updating the project
 

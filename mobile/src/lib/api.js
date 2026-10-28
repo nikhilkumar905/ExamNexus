@@ -20,20 +20,25 @@ async function request(path, { method = 'GET', body, form, timeoutMs = 30000 } =
   if (authToken) headers.Authorization = `Bearer ${authToken}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   let res
-  try {
-    res = await fetch(`${API_URL}${path}`, {
-      method,
-      headers,
-      body: form ?? (body !== undefined ? JSON.stringify(body) : undefined),
-      signal: ctrl.signal,
-    })
-  } catch {
-    throw new ApiError(`Cannot reach the server at ${API_URL}. Check your connection.`, 0)
-  } finally {
-    clearTimeout(timer)
+  if (form) {
+    res = await xhrSend(method, `${API_URL}${path}`, headers, form, timeoutMs)
+  } else {
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+    try {
+      res = await fetch(`${API_URL}${path}`, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+        signal: ctrl.signal,
+      })
+    } catch (err) {
+      if (ctrl.signal.aborted) throw timeoutError(timeoutMs)
+      throw new ApiError(`Cannot reach the server at ${API_URL}. Check your connection. (${err?.message || err})`, 0)
+    } finally {
+      clearTimeout(timer)
+    }
   }
 
   const data = await res.json().catch(() => null)
@@ -44,6 +49,26 @@ async function request(path, { method = 'GET', body, form, timeoutMs = 30000 } =
     throw new ApiError(msg || `Request failed (${res.status})`, res.status)
   }
   return data
+}
+
+const timeoutError = (ms) =>
+  new ApiError(`The server took longer than ${Math.round(ms / 1000)} s to answer. Try again.`, 0)
+
+// expo/fetch (SDK 52+) can't send React Native file parts ({ uri, name, type }); XHR can.
+function xhrSend(method, url, headers, form, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open(method, url)
+    for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v)
+    xhr.timeout = timeoutMs
+    xhr.onload = () => {
+      const text = xhr.responseText
+      resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status, json: async () => JSON.parse(text) })
+    }
+    xhr.onerror = () => reject(new ApiError(`Cannot reach the server at ${API_URL}. Check your connection.`, 0))
+    xhr.ontimeout = () => reject(timeoutError(timeoutMs))
+    xhr.send(form)
+  })
 }
 
 // Generating questions calls the LLM several times, so allow it longer.

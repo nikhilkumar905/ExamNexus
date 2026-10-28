@@ -18,6 +18,9 @@ web-build/
 mobile/ios/
 mobile/android/
 
+# Local tool settings
+.claude/
+
 # Logs and OS clutter
 *.log
 npm-debug.*
