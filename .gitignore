@@ -1,0 +1,25 @@
+# Secrets: never commit real env files (the .env.example files are kept)
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node / build output
+node_modules/
+dist/
+web-build/
+
+# Expo
+.expo/
+mobile/ios/
+mobile/android/
+
+# Logs and OS clutter
+*.log
+npm-debug.*
+.DS_Store
+Thumbs.db
