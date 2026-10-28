@@ -11,7 +11,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://192.168.0.246:8000",
+        "EXPO_PUBLIC_API_URL": "https://examnexus-api.onrender.com",
         "EXPO_PUBLIC_CONNECTIVITY_URL": "https://www.google.com/favicon.ico"
       }
     },

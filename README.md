@@ -23,11 +23,11 @@ Scan the QR code with the phone's camera, or open the link below in Chrome, to d
   <img src="docs/app-download-qr.png" alt="QR code: download the ExamNexus Android app" width="260">
 </p>
 
-**Direct link:** https://expo.dev/artifacts/eas/ZyFZ0a53kLpfGS7vMs1SQnnTD4R0t3gRLNk7S_udR8M.apk
+**Direct link:** https://expo.dev/artifacts/eas/XtagNR0pu44ENbV3tyVQHYuPmfHpNTcUb9rWAcgJRzY.apk
 
 To install: open the downloaded file from the Files app, choose **Package installer**, and allow *Install unknown apps* if asked.
 
-The app only connects while the teacher's PC runs the backend on the same Wi-Fi (see [Step 6](#step-6-start-the-servers-every-time)). To use it from anywhere, the backend must be hosted online; see [SETUP.md](SETUP.md#8-putting-it-online-optional-for-real-use).
+The app connects to the online backend (`https://examnexus-api.onrender.com`), so it works on any network with internet, with the teacher's PC switched off. Hosting details are in [SETUP.md](SETUP.md#8-putting-it-online-optional-for-real-use).
 
 ## How to run everything (step by step)
 
@@ -96,10 +96,10 @@ Leave out `-NoMobile` to also start the Expo dev server (only needed for develop
    ```
 2. Download the `.apk` from https://expo.dev/accounts/nikhilsah/projects/pdf-mcq-exam/builds and send it to the phone, for example by WhatsApp, Drive or a USB cable.
 3. On the phone, uninstall any older "PDF Exam", open the `.apk` from the **Files** app, choose **Package installer**, and allow *Install unknown apps* if asked. If Play Protect warns you, tap **Install anyway**.
-4. The phone must be on the **same Wi-Fi** as the PC, with the backend running (Step 6).
-5. The login screen shows `Server: http://<PC-IP>:8000 · v<version>`. Check that it shows your PC's IP and the latest version.
+4. The phone needs an internet connection. No Wi-Fi match with the PC is needed.
+5. The login screen shows `Server: https://examnexus-api.onrender.com · v<version>`. Check that it shows the Render address and the latest version.
 
-The server address is built into the APK from `mobile/eas.json` → `build.preview.env.EXPO_PUBLIC_API_URL`. If your PC's IP changes (check with `ipconfig`), update it there and build again.
+The server address is built into the APK from `mobile/eas.json` → `build.preview.env.EXPO_PUBLIC_API_URL`. If the backend's address changes, update it there and build again.
 
 **Option B: development with Expo Go** (instant reload while coding)
 1. Install **Expo Go** from the Play Store or App Store.
