@@ -15,6 +15,20 @@ More detail: [SETUP.md](SETUP.md) (full setup and troubleshooting) · [APK-GUIDE
 
 ---
 
+## Download the Android app
+
+Scan the QR code with the phone's camera, or open the link below in Chrome, to download the app (version 1.0.2).
+
+<p align="center">
+  <img src="docs/app-download-qr.png" alt="QR code: download the ExamNexus Android app" width="260">
+</p>
+
+**Direct link:** https://expo.dev/artifacts/eas/ZyFZ0a53kLpfGS7vMs1SQnnTD4R0t3gRLNk7S_udR8M.apk
+
+To install: open the downloaded file from the Files app, choose **Package installer**, and allow *Install unknown apps* if asked.
+
+The app only connects while the teacher's PC runs the backend on the same Wi-Fi (see [Step 6](#step-6-start-the-servers-every-time)). To use it from anywhere, the backend must be hosted online; see [SETUP.md](SETUP.md#8-putting-it-online-optional-for-real-use).
+
 ## How to run everything (step by step)
 
 All commands are for **PowerShell on Windows**, run from the project folder unless a step says otherwise.
